@@ -1,4 +1,7 @@
 from collections import deque  # library used for rotation
+from PIL import Image
+import binascii
+from GrayImageDisplayer import *
 
 # all required matrix
 
@@ -506,19 +509,76 @@ def ofb_decrypt(ciphertext, key, iv):
     return ofb_encrypt(ciphertext, key, iv)
 
 
-# Main Program
-typ = input("Enter the type (Encrypt/Decrypt) : ")
-key = input("Enter the key 128 bit (Hexadecimal) : ")
-key = key.zfill(32)
-iv = input("Enter the IV 128 bit (Hexadecimal) : ")
-iv = iv.zfill(32)
+# # Main Program
+# typ = input("Enter the type (Encrypt/Decrypt) : ")
+# key = input("Enter the key 128 bit (Hexadecimal) : ")
+# key = key.zfill(32)
+# iv = input("Enter the IV 128 bit (Hexadecimal) : ")
+# iv = iv.zfill(32)
+#
+# if typ.lower() == "encrypt":
+#     plaintext = input("Enter the plaintext (Hexadecimal) : ")
+#     plaintext = plaintext.zfill(32 * ((len(plaintext) + 31) // 32))  # Pad plaintext to be multiple of 128 bits
+#     print("The Ciphertext is : ", end=" ")
+#     print(ofb_encrypt(plaintext, key, iv))
+# else:
+#     ciphertext = input("Enter the Ciphertext (Hexadecimal) : ")
+#     print("The Decoded plaintext is : ", end=" ")
+#     print(ofb_decrypt(ciphertext, key, iv))
 
-if typ.lower() == "encrypt":
-    plaintext = input("Enter the plaintext (Hexadecimal) : ")
-    plaintext = plaintext.zfill(32 * ((len(plaintext) + 31) // 32))  # Pad plaintext to be multiple of 128 bits
-    print("The Ciphertext is : ", end=" ")
-    print(ofb_encrypt(plaintext, key, iv))
-else:
-    ciphertext = input("Enter the Ciphertext (Hexadecimal) : ")
-    print("The Decoded plaintext is : ", end=" ")
-    print(ofb_decrypt(ciphertext, key, iv))
+
+# Define global variables for size and mode
+global_image_size = None
+global_image_mode = None
+
+
+# Your existing encryption/decryption functions here...
+
+def image_to_hex(image_path):
+    """Convert image to a hexadecimal string."""
+    global global_image_size, global_image_mode
+    with Image.open(image_path) as img:
+        img_byte_array = bytearray(img.tobytes())
+        hex_str = binascii.hexlify(img_byte_array).decode('utf-8')
+        # Store size and mode in global variables
+        global_image_size = img.size
+        global_image_mode = img.mode
+    return hex_str
+
+
+def hex_to_image(hex_str, output_path):
+    """Convert hexadecimal string back to an image using global size and mode."""
+    global global_image_size, global_image_mode
+    img_byte_array = binascii.unhexlify(hex_str)
+    img = Image.frombytes(global_image_mode, global_image_size, img_byte_array)
+    img.save(output_path)
+
+
+def process_image(typ, key, iv, input_path, output_path):
+    key = key.zfill(32)
+    iv = iv.zfill(32)
+
+    if typ.lower() == "encrypt":
+        hex_str = image_to_hex(input_path)
+        encrypted_hex = ofb_encrypt(hex_str, key, iv)
+        with open(output_path, 'w') as file:
+            file.write(encrypted_hex)
+        print("Image encrypted successfully.")
+
+    elif typ.lower() == "decrypt":
+        with open(input_path, 'r') as file:
+            encrypted_hex = file.read()
+        decrypted_hex = ofb_decrypt(encrypted_hex, key, iv)
+        hex_to_image(decrypted_hex, output_path)
+        print("Image decrypted successfully.")
+
+
+key = "1a2b3c4d5e6f70819293a4b5c6d7e8f9"
+iv = "9f8e7d6c5b4a3a2b1c0d9e8f7a6b5c4d"
+INPUT_IMG_PATH = r'C:\Users\yuval\PycharmProjects\TwoFish\Assets\test_image.jpeg'
+ENCRYPTED_IMG_PATH = r'C:\Users\yuval\PycharmProjects\TwoFish\Assets\encrypted_image'
+DECRYPTED_IMG_PATH = r'C:\Users\yuval\PycharmProjects\TwoFish\Assets\DecryptedImage.jpeg'
+process_image("encrypt", key, iv, INPUT_IMG_PATH, ENCRYPTED_IMG_PATH)
+show_image(INPUT_IMG_PATH, convert_to_gray=False)
+process_image("decrypt", key, iv, ENCRYPTED_IMG_PATH, DECRYPTED_IMG_PATH)
+show_image(DECRYPTED_IMG_PATH, convert_to_gray=False)
