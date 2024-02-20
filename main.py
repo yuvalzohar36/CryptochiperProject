@@ -2,9 +2,9 @@ from collections import deque  # library used for rotation
 from PIL import Image
 import binascii
 from GrayImageDisplayer import *
-
+from Hellman import *
+import os
 # all required matrix
-
 RS_matrix = [[0x01, 0xA4, 0x55, 0x87, 0x5A, 0x58, 0xDB, 0x9E], [0xA4, 0x56, 0x82, 0xF3, 0x1E, 0xC6, 0x68, 0xE5],
              [0x02, 0xA1, 0xFC, 0xC1, 0x47, 0xAE, 0x3D, 0x19], [0xA4, 0x55, 0x87, 0x5A, 0x58, 0xDB, 0x9E, 0x03]]
 tq0 = [[0x8, 0x1, 0x7, 0xD, 0x6, 0xF, 0x3, 0x2, 0x0, 0xB, 0x5, 0x9, 0xE, 0xC, 0xA, 0x4],
@@ -573,12 +573,25 @@ def process_image(typ, key, iv, input_path, output_path):
         print("Image decrypted successfully.")
 
 
+
+##############################
+base_dir = os.getcwd()
+print(base_dir)
+###############################
 key = "1a2b3c4d5e6f70819293a4b5c6d7e8f9"
 iv = "9f8e7d6c5b4a3a2b1c0d9e8f7a6b5c4d"
-INPUT_IMG_PATH = r'C:\Users\yuval\PycharmProjects\TwoFish\Assets\test_image.jpeg'
-ENCRYPTED_IMG_PATH = r'C:\Users\yuval\PycharmProjects\TwoFish\Assets\encrypted_image'
-DECRYPTED_IMG_PATH = r'C:\Users\yuval\PycharmProjects\TwoFish\Assets\DecryptedImage.jpeg'
-process_image("encrypt", key, iv, INPUT_IMG_PATH, ENCRYPTED_IMG_PATH)
-show_image(INPUT_IMG_PATH, convert_to_gray=False)
-process_image("decrypt", key, iv, ENCRYPTED_IMG_PATH, DECRYPTED_IMG_PATH)
-show_image(DECRYPTED_IMG_PATH, convert_to_gray=False)
+INPUT_IMG_PATH = base_dir + r'\Assets\test_image.jpeg'
+ENCRYPTED_IMG_PATH = base_dir + r'\Assets\encrypted_image'
+DECRYPTED_IMG_PATH = base_dir + r'\Assets\DecryptedImage.jpeg'
+######### HELLMANS ########
+
+#
+#
+#
+#
+#
+#
+# process_image("encrypt", key, iv, INPUT_IMG_PATH, ENCRYPTED_IMG_PATH)
+# show_image(INPUT_IMG_PATH, convert_to_gray=False)
+# process_image("decrypt", key, iv, ENCRYPTED_IMG_PATH, DECRYPTED_IMG_PATH)
+# show_image(DECRYPTED_IMG_PATH, convert_to_gray=False)
