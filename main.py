@@ -574,24 +574,42 @@ def process_image(typ, key, iv, input_path, output_path):
 
 
 
+############INIT_VARS_HELLMANS#########
+mh = MerkleHellman()
+randomNumber = random.randint(1, 10)  # Example random number for key generation
+mh.genKeys(randomNumber)
+publicKey = mh.getPublicKey()
+privateKey = mh.getPrivateKey()
 ##############################
 base_dir = os.getcwd()
 print(base_dir)
 ###############################
-key = "1a2b3c4d5e6f70819293a4b5c6d7e8f9"
+key = "1a2b3c4d5e6f70819293a4b5c6d7e8f9" # key of two-fish algorithm
+print("Original key:", key)
 iv = "9f8e7d6c5b4a3a2b1c0d9e8f7a6b5c4d"
 INPUT_IMG_PATH = base_dir + r'\Assets\test_image.jpeg'
 ENCRYPTED_IMG_PATH = base_dir + r'\Assets\encrypted_image'
 DECRYPTED_IMG_PATH = base_dir + r'\Assets\DecryptedImage.jpeg'
-######### HELLMANS ########
+######### ENCRYPT_HELLMANS ########
+encrypted_key = mh.encryptKey(key, publicKey)
+print(f"Encrypted message: {encrypted_key}")
+###################################
 
-#
-#
-#
-#
-#
-#
-# process_image("encrypt", key, iv, INPUT_IMG_PATH, ENCRYPTED_IMG_PATH)
-# show_image(INPUT_IMG_PATH, convert_to_gray=False)
-# process_image("decrypt", key, iv, ENCRYPTED_IMG_PATH, DECRYPTED_IMG_PATH)
-# show_image(DECRYPTED_IMG_PATH, convert_to_gray=False)
+######### SEND KEY #############
+
+######### DECRYPT_HELLMANS ########
+decrypted_key = mh.decryptKey(encrypted_key, *privateKey)
+print(f"Decrypted message: {decrypted_key}")
+###################################
+
+
+
+
+###ENCRYPT THE IMAGE WITH TWO-FISH & OFB - With the original key
+process_image("encrypt", key, iv, INPUT_IMG_PATH, ENCRYPTED_IMG_PATH)
+show_image(INPUT_IMG_PATH, convert_to_gray=False)
+###DECRYPT THE IMAGE WITH TWO-FISH & OFB - With the decrypted key
+
+
+process_image("decrypt", decrypted_key, iv, ENCRYPTED_IMG_PATH, DECRYPTED_IMG_PATH)
+show_image(DECRYPTED_IMG_PATH, convert_to_gray=False)

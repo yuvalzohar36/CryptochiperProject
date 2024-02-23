@@ -111,18 +111,18 @@ class MerkleHellman:
         return int(decrypted_binary[::-1], 2).to_bytes((len(decrypted_binary) + 7) // 8, 'big').decode()
 
 
-
-# Example usage
-mh = MerkleHellman()
-randomNumber = random.randint(1, 10)  # Example random number for key generation
-mh.genKeys(randomNumber)
-
-publicKey = mh.getPublicKey()
-privateKey = mh.getPrivateKey()
-message = "1a2b3c4d5e6f70819293a4b5c6d7e8f9"
-
-encrypted = mh.encryptKey(message, publicKey)
-print(f"Encrypted message: {encrypted}")
-
-decrypted = mh.decryptKey(encrypted, *privateKey)
-print(f"Decrypted message: {decrypted}")
+#
+# # Example usage
+# mh = MerkleHellman()
+# randomNumber = random.randint(1, 10)  # Example random number for key generation
+# mh.genKeys(randomNumber)
+#
+# publicKey = mh.getPublicKey()
+# privateKey = mh.getPrivateKey()
+# message = "1a2b3c4d5e6f70819293a4b5c6d7e8f9"
+#
+# encrypted = mh.encryptKey(message, publicKey)
+# print(f"Encrypted message: {encrypted}")
+#
+# decrypted = mh.decryptKey(encrypted, *privateKey)
+# print(f"Decrypted message: {decrypted}")
