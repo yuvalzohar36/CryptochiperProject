@@ -4,6 +4,9 @@ import binascii
 from GrayImageDisplayer import *
 from Hellman import *
 import os
+from ecdsa.ecdsa_api import *
+
+import secrets
 # all required matrix
 RS_matrix = [[0x01, 0xA4, 0x55, 0x87, 0x5A, 0x58, 0xDB, 0x9E], [0xA4, 0x56, 0x82, 0xF3, 0x1E, 0xC6, 0x68, 0xE5],
              [0x02, 0xA1, 0xFC, 0xC1, 0x47, 0xAE, 0x3D, 0x19], [0xA4, 0x55, 0x87, 0x5A, 0x58, 0xDB, 0x9E, 0x03]]
@@ -572,44 +575,59 @@ def process_image(typ, key, iv, input_path, output_path):
         hex_to_image(decrypted_hex, output_path)
         print("Image decrypted successfully.")
 
-
-
+base_dir = os.getcwd()
+INPUT_IMG_PATH = base_dir + r'\Assets\test_image.jpeg'
+ENCRYPTED_IMG_PATH = base_dir + r'\Assets\encrypted_image'
+DECRYPTED_IMG_PATH = base_dir + r'\Assets\DecryptedImage.jpeg'
 ############INIT_VARS_HELLMANS#########
 mh = MerkleHellman()
 randomNumber = random.randint(1, 10)  # Example random number for key generation
 mh.genKeys(randomNumber)
 publicKey = mh.getPublicKey()
 privateKey = mh.getPrivateKey()
-##############################
-base_dir = os.getcwd()
-print(base_dir)
-###############################
-key = "1a2b3c4d5e6f70819293a4b5c6d7e8f9" # key of two-fish algorithm
-print("Original key:", key)
+###########TWO_FISH############
+two_fish_original_key = "1a2b3c4d5e6f70819293a4b5c6d7e8f9"  # key of two-fish algorithm
+print("Two Fish + OFB Original key:", two_fish_original_key)
 iv = "9f8e7d6c5b4a3a2b1c0d9e8f7a6b5c4d"
-INPUT_IMG_PATH = base_dir + r'\Assets\test_image.jpeg'
-ENCRYPTED_IMG_PATH = base_dir + r'\Assets\encrypted_image'
-DECRYPTED_IMG_PATH = base_dir + r'\Assets\DecryptedImage.jpeg'
-######### ENCRYPT_HELLMANS ########
-encrypted_key = mh.encryptKey(key, publicKey)
-print(f"Encrypted message: {encrypted_key}")
+#########ECDSA#################
+# Generate a 256-bit (32 bytes) random number for ECDSA secp256k1 private key
+alice_private_key = secrets.randbits(256) # Generate alice_private_key
+alice_public_key = get_pub_key_by_prvt_key(alice_private_key) # The the pub_key
+sign_secret = secrets.randbits(256) # This sign_secret is just for generating the sign (We want it to be unique and private because we dont want anyone to re-assemble the sign (r,s))
+###############################
+
+
+################################################### ALICE #####################################################
+######### ENCRYPT_TWO_FISH_KEY_WITH_HELLMANS ########
+two_fish_encrypted_key = mh.encryptKey(two_fish_original_key, publicKey)
+print(f"Encrypted two fish key: {two_fish_encrypted_key}")
 ###################################
-
-######### SEND KEY #############
-
-######### DECRYPT_HELLMANS ########
-decrypted_key = mh.decryptKey(encrypted_key, *privateKey)
-print(f"Decrypted message: {decrypted_key}")
-###################################
-
-
-
-
-###ENCRYPT THE IMAGE WITH TWO-FISH & OFB - With the original key
-process_image("encrypt", key, iv, INPUT_IMG_PATH, ENCRYPTED_IMG_PATH)
+### ENCRYPT THE IMAGE WITH TWO-FISH & OFB - With the original key
+process_image("encrypt", two_fish_original_key, iv, INPUT_IMG_PATH, ENCRYPTED_IMG_PATH)
 show_image(INPUT_IMG_PATH, convert_to_gray=False)
-###DECRYPT THE IMAGE WITH TWO-FISH & OFB - With the decrypted key
+r, s = sign_image(ENCRYPTED_IMG_PATH, alice_private_key, sign_secret)
+# print("Signature (r, s):", (r, s))
+##################################################################################################################
+
+# SEND EVERY_THING TO BOBY
 
 
-process_image("decrypt", decrypted_key, iv, ENCRYPTED_IMG_PATH, DECRYPTED_IMG_PATH)
-show_image(DECRYPTED_IMG_PATH, convert_to_gray=False)
+################################################### BOB #####################################################
+######### DECRYPT_TWO_FISH_KEY_WITH_HELLMANS ########
+### DECRYPT THE IMAGE WITH TWO-FISH & OFB - With the decrypted key
+verification_result = verify_signature(ENCRYPTED_IMG_PATH, alice_public_key, (r, s))
+if verification_result: # The sign verifiction succeed
+    print("Verification successful: The message is authentic and untampered.")
+    two_fish_decrypted_key = mh.decryptKey(two_fish_encrypted_key, *privateKey)
+    print(f"Decrypted Two fish key: {two_fish_decrypted_key}")
+    process_image("decrypt", two_fish_decrypted_key, iv, ENCRYPTED_IMG_PATH, DECRYPTED_IMG_PATH) # decrypt the image (After validation we know that alice is the sender)
+    show_image(DECRYPTED_IMG_PATH, convert_to_gray=False)
+else:
+    print("Verification failed: The message's authenticity could not be verified.")
+################################################################################################################
+
+
+
+
+
+
